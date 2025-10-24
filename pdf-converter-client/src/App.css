@@ -1,0 +1,244 @@
+/* 🌤️ Background */
+body {
+  margin: 0;
+  padding: 0;
+  font-family: "Inter", sans-serif;
+  background: radial-gradient(
+      circle at top left,
+      rgba(255, 255, 255, 0.6),
+      transparent 60%
+    ),
+    linear-gradient(135deg, #dee9f7 0%, #e8ddff 100%);
+  background-attachment: fixed;
+  min-height: 100vh;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+
+/* 🌈 Smooth background motion */
+@keyframes gradientMove {
+  0% {
+    background-position: 0% 50%;
+  }
+  50% {
+    background-position: 100% 50%;
+  }
+  100% {
+    background-position: 0% 50%;
+  }
+}
+
+
+/* 🪄 Converter Card */
+.converter-card {
+  background: rgba(255, 255, 255, 0.9);
+  border-radius: 18px;
+  padding: 50px 40px;
+  max-width: 430px;
+  width: 90%;
+  color: #1a1a1a;
+  text-align: center;
+  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.1);
+  backdrop-filter: blur(8px);
+}
+
+.title {
+  font-size: 28px;
+  font-weight: 700;
+  color: #1a1a1a;
+  margin-bottom: 10px;
+}
+
+.subtitle {
+  font-size: 16px;
+  color: #555;
+  margin-bottom: 5px;
+}
+
+.note {
+  font-size: 13px;
+  color: #777;
+  margin-bottom: 25px;
+}
+
+/* 🧊 Upload Area */
+.upload-box {
+  border: 2px dashed #ccc;
+  border-radius: 12px;
+  padding: 45px 25px;
+  transition: all 0.3s ease;
+  cursor: pointer;
+  background-color: #fafafa;
+}
+
+.upload-box:hover {
+  border-color: #007bff;
+  background-color: #f1f8ff;
+}
+
+/* 💫 Drag Animation */
+.upload-box.drag-active {
+  border-color: #007bff;
+  background-color: #e7f1ff;
+  box-shadow: 0 0 15px rgba(0, 123, 255, 0.3);
+}
+
+.file-input {
+  display: none;
+}
+
+.upload-label {
+  color: #333;
+  cursor: pointer;
+  font-weight: 500;
+  font-size: 16px;
+}
+
+.browse {
+  text-decoration: underline;
+  color: #007bff;
+}
+
+/* 📄 File Preview */
+.file-preview {
+  margin-top: 25px;
+  text-align: left;
+  max-height: 150px;
+  overflow-y: auto;
+  background: #f9f9f9;
+  padding: 12px;
+  border-radius: 10px;
+  border: 1px solid #eee;
+}
+
+.file-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 14px;
+  color: #333;
+  margin-bottom: 6px;
+  padding-bottom: 5px;
+  border-bottom: 1px solid #eee;
+}
+
+/* ⚙️ Convert Button */
+.convert-btn {
+  margin-top: 25px;
+  background: #00c853;
+  border: none;
+  padding: 15px 0;
+  width: 100%;
+  color: white;
+  font-weight: bold;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  font-size: 16px;
+}
+
+.convert-btn:hover {
+  background: #00b04a;
+  transform: translateY(-2px);
+  box-shadow: 0 6px 18px rgba(0, 200, 83, 0.25);
+}
+
+/* 📈 Progress Bar */
+.progress-bar-wrap {
+  width: 100%;
+  height: 8px;
+  background: #eee;
+  border-radius: 10px;
+  margin-top: 20px;
+}
+
+.progress-bar {
+  height: 8px;
+  background: #00c853;
+  border-radius: 10px;
+  transition: width 0.3s ease;
+}
+
+/* 🕓 History */
+.history {
+  margin-top: 30px;
+  text-align: left;
+  font-size: 14px;
+  color: #555;
+}
+
+.history h3 {
+  margin-bottom: 10px;
+}
+
+.history-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 5px;
+}
+
+.history-item a {
+  color: #007bff;
+  text-decoration: none;
+}
+
+.history-item a:hover {
+  text-decoration: underline;
+}
+
+/* 📱 Mobile Responsive */
+@media (max-width: 600px) {
+  .converter-card {
+    padding: 35px 25px;
+  }
+
+  .title {
+    font-size: 24px;
+  }
+
+  .upload-box {
+    padding: 30px 20px;
+  }
+}
+/* 📱 Responsive adjustments */
+@media (max-width: 768px) {
+  .upload-box {
+    width: 90%;
+    padding: 20px;
+  }
+
+  h1 {
+    font-size: 1.4rem;
+  }
+
+  p {
+    font-size: 0.85rem;
+  }
+
+  button {
+    width: 100%;
+  }
+}
+
+@media (max-width: 480px) {
+  .upload-box {
+    width: 95%;
+    padding: 15px;
+    border-radius: 15px;
+  }
+
+  h1 {
+    font-size: 1.2rem;
+  }
+
+  p {
+    font-size: 0.8rem;
+  }
+
+  input[type="file"] {
+    width: 100%;
+  }
+}

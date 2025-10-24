@@ -1,0 +1,23 @@
+{
+  "name": "pdf-converter",
+  "version": "1.0.0",
+  "description": "A simple PDF converter tool using Node.js and CloudConvert API",
+  "main": "server.js",
+  "type": "module",
+  "scripts": {
+    "start": "node server.js"
+  },
+  "dependencies": {
+    "axios": "^1.12.2",
+    "cloudconvert": "^3.0.0",
+    "cors": "^2.8.5",
+    "dotenv": "^16.6.1",
+    "express": "^4.21.2",
+    "express-fileupload": "^1.5.2",
+    "form-data": "^4.0.4",
+    "framer-motion": "^12.23.24",
+    "multer": "^1.4.5-lts.1",
+    "node-fetch": "^3.3.2",
+    "react-icons": "^5.5.0"
+  }
+}
