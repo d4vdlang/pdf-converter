@@ -1,21 +1,3 @@
-import express from "express";
-import fileUpload from "express-fileupload";
-import cors from "cors";
-import axios from "axios";
-import FormData from "form-data";
-import dotenv from "dotenv";
-import fs from "fs";
-
-dotenv.config();
-
-const app = express();
-const PORT = process.env.PORT || 3000;
-const CLOUDCONVERT_API_KEY = process.env.CLOUDCONVERT_API_KEY;
-
-app.use(cors());
-app.use(fileUpload());
-app.use(express.json());
-
 app.post("/convert", async (req, res) => {
   try {
     if (!req.files || !req.files.file) {
@@ -45,9 +27,7 @@ app.post("/convert", async (req, res) => {
         },
       },
       {
-        headers: {
-          Authorization: `Bearer ${CLOUDCONVERT_API_KEY}`,
-        },
+        headers: { Authorization: `Bearer ${CLOUDCONVERT_API_KEY}` },
       }
     );
 
@@ -65,7 +45,7 @@ app.post("/convert", async (req, res) => {
 
     await axios.post(uploadUrl, form, { headers: form.getHeaders() });
 
-    // Step 3: Wait for completion
+    // Step 3: Wait for job completion
     const jobId = jobData.id;
     let finishedJob = null;
     let attempts = 0;
@@ -86,24 +66,24 @@ app.post("/convert", async (req, res) => {
       return res.status(500).json({ error: "Conversion timed out." });
     }
 
-    // Step 4: Get the download link
+    // Step 4: Get the final file URL
     const exportTask = finishedJob.tasks.find((t) => t.name === "export-my-file");
     const fileUrl = exportTask.result.files[0].url;
 
-    console.log("✅ Conversion complete:", fileUrl);
-    res.json({
-      message: "✅ Conversion successful!",
-      download: fileUrl,
+    // Step 5: Download the file from CloudConvert
+    const fileResponse = await axios.get(fileUrl, { responseType: "arraybuffer" });
+    const fileBuffer = Buffer.from(fileResponse.data);
+
+    // Step 6: Send the file directly to the browser
+    const fileName = uploadedFile.name.replace(/\.[^/.]+$/, `.${targetFormat}`);
+    res.set({
+      "Content-Type": "application/octet-stream",
+      "Content-Disposition": `attachment; filename="${fileName}"`,
     });
+
+    res.send(fileBuffer);
   } catch (err) {
     console.error("❌ Conversion error:", err.response?.data || err.message);
-    if (err.response) console.log(JSON.stringify(err.response.data, null, 2));
     res.status(500).json({ error: "Conversion failed." });
   }
 });
-
-app.listen(PORT, () => {
-  console.log(`✅ Server running on http://localhost:${PORT}`);
-});
-
-
