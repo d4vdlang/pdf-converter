@@ -9,8 +9,8 @@ import {
 } from "react-icons/fa";
 import "./App.css";
 
+// 🟢 Replace this with your backend API URL
 const API_URL = "https://pdf-converter-va03.onrender.com/convert";
-
 
 function App() {
   const [files, setFiles] = useState([]);
@@ -18,6 +18,7 @@ function App() {
   const [working, setWorking] = useState(false);
   const [history, setHistory] = useState([]);
   const [dragActive, setDragActive] = useState(false);
+  const [targetFormat, setTargetFormat] = useState("pdf"); // 🆕 user’s chosen format
 
   // Handle file input or drop
   const handleFileChange = (e) => {
@@ -62,6 +63,7 @@ function App() {
     }
   };
 
+  // 🪄 UPDATED convert function
   const handleConvert = async () => {
     if (files.length === 0) {
       alert("Please upload at least one file.");
@@ -76,19 +78,31 @@ function App() {
       const file = files[i];
       const form = new FormData();
       form.append("file", file);
-      form.append("target", "pdf");
+      form.append("target", targetFormat); // 🆕 uses chosen format
 
       try {
         const res = await fetch(API_URL, { method: "POST", body: form });
         if (!res.ok) throw new Error("Conversion failed");
 
-        const blob = await res.blob();
-        const url = window.URL.createObjectURL(blob);
-        newHistory.push({ name: file.name, url });
+        const data = await res.json();
+
+        if (data.download) {
+          const link = document.createElement("a");
+          link.href = data.download;
+          link.download = `converted-${file.name.split(".")[0]}.${targetFormat}`;
+          document.body.appendChild(link);
+          link.click();
+          link.remove();
+
+          newHistory.push({ name: file.name, url: data.download });
+        } else {
+          alert("No download link found in response.");
+        }
 
         setProgress(20 + ((i + 1) / files.length) * 70);
       } catch (err) {
         console.error("Error:", err);
+        alert("Conversion failed for " + file.name);
       }
     }
 
@@ -102,11 +116,30 @@ function App() {
       <div className="converter-card">
         <h1 className="title">PDF Converter</h1>
         <p className="subtitle">
-          Convert Word, Excel, PowerPoint, or Images into PDF instantly.
+          Convert between PDF, Word, Excel, PowerPoint, and Images easily.
         </p>
         <p className="note">
           Supported: DOC, DOCX, TXT, RTF, ODT, PDF, PNG, JPG, JPEG, PPT, XLSX
         </p>
+
+        {/* 🆕 format selection dropdown */}
+        <div className="format-selector">
+          <label htmlFor="format">Convert to:</label>
+          <select
+            id="format"
+            value={targetFormat}
+            onChange={(e) => setTargetFormat(e.target.value)}
+          >
+            <option value="pdf">PDF (.pdf)</option>
+            <option value="docx">Word (.docx)</option>
+            <option value="odt">OpenDocument (.odt)</option>
+            <option value="txt">Text (.txt)</option>
+            <option value="pptx">PowerPoint (.pptx)</option>
+            <option value="xlsx">Excel (.xlsx)</option>
+            <option value="png">Image (.png)</option>
+            <option value="jpg">Image (.jpg)</option>
+          </select>
+        </div>
 
         <div
           className={`upload-box ${dragActive ? "drag-active" : ""}`}
@@ -143,7 +176,7 @@ function App() {
         )}
 
         <button className="convert-btn" disabled={working} onClick={handleConvert}>
-          {working ? "Converting…" : "Convert to PDF"}
+          {working ? "Converting…" : `Convert to ${targetFormat.toUpperCase()}`}
         </button>
 
         {working && (
@@ -157,7 +190,7 @@ function App() {
             <h3>Converted Files</h3>
             {history.map((h, i) => (
               <div key={i} className="history-item">
-                <FaFilePdf color="#E74C3C" /> {h.name} →{" "}
+                {getIcon(h.name)} {h.name} →{" "}
                 <a href={h.url} download>
                   Download
                 </a>
