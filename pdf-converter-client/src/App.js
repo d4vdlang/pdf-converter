@@ -11,7 +11,6 @@ import {
   FaDropbox,
   FaGoogleDrive,
   FaLink,
-  FaEnvelope,
 } from "react-icons/fa";
 import "./App.css";
 
