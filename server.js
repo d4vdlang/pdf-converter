@@ -67,26 +67,34 @@ app.post("/convert", async (req, res) => {
 
     await axios.post(uploadUrl, form, { headers: form.getHeaders() });
 
-    // Step 3: Wait for job completion
-    const jobId = jobData.id;
-    let finishedJob = null;
-    let attempts = 0;
+   // Step 3: Wait for job completion (polling)
+const jobId = jobData.id;
+let finishedJob = null;
+let attempts = 0;
 
-    while (!finishedJob && attempts < 10) {
-      await new Promise((resolve) => setTimeout(resolve, 3000));
-      const check = await axios.get(`https://api.cloudconvert.com/v2/jobs/${jobId}`, {
-        headers: { Authorization: `Bearer ${CLOUDCONVERT_API_KEY}` },
-      });
+console.log(`🕒 Waiting for CloudConvert job ${jobId} to finish...`);
 
-      if (check.data.data.status === "finished") {
-        finishedJob = check.data.data;
-      }
-      attempts++;
-    }
+while (!finishedJob && attempts < 20) {
+  await new Promise((resolve) => setTimeout(resolve, 3000)); // wait 3s between checks
+  const check = await axios.get(`https://api.cloudconvert.com/v2/jobs/${jobId}`, {
+    headers: { Authorization: `Bearer ${CLOUDCONVERT_API_KEY}` },
+  });
 
-    if (!finishedJob) {
-      return res.status(500).json({ error: "Conversion timed out." });
-    }
+  console.log(`⏳ Attempt ${attempts + 1}: Job status = ${check.data.data.status}`);
+
+  if (check.data.data.status === "finished") {
+    finishedJob = check.data.data;
+    console.log("✅ Job finished!");
+  } else if (check.data.data.status === "error") {
+    console.error("❌ CloudConvert job failed:", check.data.data);
+    break;
+  }
+  attempts++;
+}
+
+if (!finishedJob) {
+  return res.status(500).json({ error: "Conversion timed out or failed." });
+}
 
     // Step 4: Get the final file URL
     const exportTask = finishedJob.tasks.find((t) => t.name === "export-my-file");
