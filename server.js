@@ -1,3 +1,23 @@
+// server.js
+
+// --- Import dependencies ---
+import express from "express";
+import cors from "cors";
+import fileUpload from "express-fileupload";
+import axios from "axios";
+import FormData from "form-data"; // needed for uploading to CloudConvert
+
+// --- Create Express app ---
+const app = express();
+const PORT = process.env.PORT || 5000;
+const CLOUDCONVERT_API_KEY = process.env.CLOUDCONVERT_API_KEY;
+
+// --- Middleware setup ---
+app.use(cors());
+app.use(express.json());
+app.use(fileUpload());
+
+// --- PDF conversion route ---
 app.post("/convert", async (req, res) => {
   try {
     if (!req.files || !req.files.file) {
@@ -86,4 +106,14 @@ app.post("/convert", async (req, res) => {
     console.error("❌ Conversion error:", err.response?.data || err.message);
     res.status(500).json({ error: "Conversion failed." });
   }
+});
+
+// --- Simple test route ---
+app.get("/", (req, res) => {
+  res.send("✅ PDF Converter backend is running!");
+});
+
+// --- Start the server ---
+app.listen(PORT, () => {
+  console.log(`🚀 Server running on port ${PORT}`);
 });
