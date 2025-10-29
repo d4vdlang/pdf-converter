@@ -7,6 +7,8 @@ import fileUpload from "express-fileupload";
 import axios from "axios";
 import FormData from "form-data"; // needed for uploading to CloudConvert
 
+console.log("🔑 CloudConvert key loaded?", !!process.env.CLOUDCONVERT_API_KEY);
+
 // --- Create Express app ---
 const app = express();
 const PORT = process.env.PORT || 5000;
