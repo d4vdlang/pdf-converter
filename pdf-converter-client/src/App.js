@@ -28,7 +28,6 @@ import "./App.css";
  */
 const API_URL = process.env.REACT_APP_API_URL ?? "http://localhost:5000/convert";
 
-
 /* -------------------- Google Ad Component (safe) -------------------- */
 function GoogleAd() {
   // useLocation so ad reloads on route change
@@ -65,7 +64,7 @@ function Home() {
   return (
     <motion.div className="home" initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ duration: 0.7 }}>
       <div className="home-hero">
-        <h1>Welcome to PDF Converter</h1>
+        <h1>Welcome to PDFConvert4me</h1>
         <p>Convert, merge, and transform files instantly — right from your browser.</p>
         <Link to="/convert">
           <button className="primary-btn">Start Converting</button>
@@ -151,94 +150,95 @@ function Converter() {
     }
   };
 
-  // ---------- CORE: handleConvert (fixed) ----------
-  const handleConvert = async () => {
-    if (!files.length) {
-      alert("Please upload at least one file.");
-      return;
+// ---------- CORE: handleConvert (fixed + daily limit) ----------
+const handleConvert = async () => {
+  // ---- DAILY LIMIT CHECK ----
+  const today = new Date().toDateString();
+  const usedToday = Number(localStorage.getItem("convCount_" + today) || "0");
+
+  if (usedToday >= 5) {
+    alert("You have used today's FREE limit of 5 conversions. Come back tomorrow ✅");
+    return;
+  }
+
+  if (!files.length) {
+    alert("Please upload at least one file.");
+    return;
+  }
+
+  setWorking(true);
+  setProgress(5);
+  const newHistory = [];
+
+  // convert files one by one (simple sequential approach)
+  for (let i = 0; i < files.length; i++) {
+    // ---- every file counts as 1 conversion ----
+    const updated = usedToday + i + 1;
+    if (updated > 5) {
+      alert("Daily free limit reached (5). Remaining files won't be converted.");
+      break;
     }
 
-    setWorking(true);
-    setProgress(5);
-    const newHistory = [];
+    const file = files[i];
+    const form = new FormData();
+    form.append("file", file);
+    form.append("target", targetFormat);
 
-    // convert files one by one (simple sequential approach)
-    for (let i = 0; i < files.length; i++) {
-      const file = files[i];
-      const form = new FormData();
-      form.append("file", file);
-      form.append("target", targetFormat);
+    try {
+      const res = await fetch(API_URL, {
+        method: "POST",
+        body: form,
+      });
 
-      try {
-        // send to backend
-        const res = await fetch(API_URL, {
-          method: "POST",
-          body: form,
-        });
-
-        // if backend returns an error as JSON (e.g., { error: "..." })
-        const contentType = res.headers.get("content-type") || "";
-        if (contentType.includes("application/json")) {
-          // parse and show error
-          const json = await res.json().catch(() => ({}));
-          const errMsg = json.error || json.message || "Conversion failed (server).";
-          console.warn("Server JSON error for file", file.name, json);
-          alert(`Failed converting ${file.name}: ${errMsg}`);
-          // continue to next file rather than aborting all
-          setProgress(Math.min(100, 5 + Math.round(((i + 1) / files.length) * 90)));
-          continue;
-        }
-
-        if (!res.ok) {
-          alert(`Failed converting ${file.name} (status ${res.status}).`);
-          setProgress(Math.min(100, 5 + Math.round(((i + 1) / files.length) * 90)));
-          continue;
-        }
-
-        // Otherwise, treat as binary (the converted file)
-        const arrayBuffer = await res.arrayBuffer();
-        const blob = new Blob([arrayBuffer], { type: res.headers.get("content-type") || "application/octet-stream" });
-
-        // create a downloadable URL
-        const downloadUrl = URL.createObjectURL(blob);
-        const downloadName = file.name.replace(/\.[^/.]+$/, `.${targetFormat}`);
-
-        // trigger download in browser
-        const link = document.createElement("a");
-        link.href = downloadUrl;
-        link.download = downloadName;
-        document.body.appendChild(link);
-        link.click();
-        link.remove();
-
-        // add to history and schedule object URL revoke after 1 minute
-        newHistory.push({ name: downloadName, url: downloadUrl });
-        setTimeout(() => {
-          try {
-            URL.revokeObjectURL(downloadUrl);
-          } catch (e) {
-            /* ignore */
-          }
-        }, 60 * 1000);
-
-        // update progress
+      const contentType = res.headers.get("content-type") || "";
+      if (contentType.includes("application/json")) {
+        const json = await res.json().catch(() => ({}));
+        const errMsg = json.error || json.message || "Conversion failed (server).";
+        console.warn("Server JSON error for file", file.name, json);
+        alert(`Failed converting ${file.name}: ${errMsg}`);
         setProgress(Math.min(100, 5 + Math.round(((i + 1) / files.length) * 90)));
-      } catch (err) {
-        console.error("Client conversion error for file", file.name, err);
-        alert("Conversion failed for " + file.name);
-        // continue to next file
-        setProgress(Math.min(100, 5 + Math.round(((i + 1) / files.length) * 90)));
+        continue;
       }
+
+      if (!res.ok) {
+        alert(`Failed converting ${file.name} (status ${res.status}).`);
+        setProgress(Math.min(100, 5 + Math.round(((i + 1) / files.length) * 90)));
+        continue;
+      }
+
+      const arrayBuffer = await res.arrayBuffer();
+      const blob = new Blob([arrayBuffer], { type: res.headers.get("content-type") || "application/octet-stream" });
+
+      const downloadUrl = URL.createObjectURL(blob);
+      const downloadName = file.name.replace(/\.[^/.]+$/, `.${targetFormat}`);
+
+      const link = document.createElement("a");
+      link.href = downloadUrl;
+      link.download = downloadName;
+      document.body.appendChild(link);
+      link.click();
+      link.remove();
+
+      newHistory.push({ name: downloadName, url: downloadUrl });
+      setTimeout(() => URL.revokeObjectURL(downloadUrl), 60000);
+
+      // ---- update counter here ----
+      localStorage.setItem("convCount_" + today, updated.toString());
+
+      setProgress(Math.min(100, 5 + Math.round(((i + 1) / files.length) * 90)));
+    } catch (err) {
+      console.error("Client conversion error for file", file.name, err);
+      alert("Conversion failed for " + file.name);
+      setProgress(Math.min(100, 5 + Math.round(((i + 1) / files.length) * 90)));
     }
+  }
 
-    // done
-    setHistory((prev) => [...newHistory, ...prev]);
-    setProgress(100);
-    setWorking(false);
+  setHistory((prev) => [...newHistory, ...prev]);
+  setProgress(100);
+  setWorking(false);
 
-    // small delay then reset progress bar for UX
-    setTimeout(() => setProgress(0), 700);
-  };
+  setTimeout(() => setProgress(0), 700);
+};
 
   // ---------- URL upload ----------
   const handleUrlUpload = async () => {
@@ -376,7 +376,7 @@ function Converter() {
       onDragLeave={handleDragLeave}
     >
       <div className="converter-card">
-        <h1 className="title">PDF Converter</h1>
+        <h1 className="title">PDFConvert4me</h1>
         <p className="subtitle">Convert between PDF, Word, Excel, PowerPoint, and Images easily.</p>
         <p className="note">Supported: DOC, DOCX, TXT, RTF, ODT, PDF, PNG, JPG, JPEG, PPT, XLSX</p>
 
@@ -493,7 +493,7 @@ function Terms() {
   return (
     <motion.div className="terms" initial={{ opacity: 0 }} animate={{ opacity: 1 }}>
       <h1>Terms of Service</h1>
-      <p>By using PDF Converter you agree to use it only for lawful purposes. Conversions are best-effort; results may vary.</p>
+      <p>By using PDFConvert4me you agree to use it only for lawful purposes. Conversions are best-effort; results may vary.</p>
       <p>We may update these terms to improve performance or comply with law.</p>
       <GoogleAd />
     </motion.div>
@@ -555,14 +555,16 @@ function Contact() {
 function App() {
   return (
     <Router>
-      <nav className="navbar">
+        <nav className="navbar">
+        <div className="brand">PDFConvert4Me</div>
+  
         <Link to="/">Home</Link>
         <Link to="/convert">Converter</Link>
         <Link to="/privacy">Privacy</Link>
         <Link to="/terms">Terms</Link>
         <Link to="/contact">Contact</Link>
-      </nav>
-
+        </nav>
+        
       <Routes>
         <Route path="/" element={<Home />} />
         <Route path="/convert" element={<Converter />} />
@@ -572,7 +574,7 @@ function App() {
       </Routes>
 
       <footer className="footer">
-        <p>© {new Date().getFullYear()} PDF Converter. All rights reserved.</p>
+        <p>© {new Date().getFullYear()} PDFConvert4me. All rights reserved.</p>
       </footer>
     </Router>
   );

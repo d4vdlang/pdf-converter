@@ -234,6 +234,12 @@
   color: #128f3b;
 }
 
+.navbar .brand {
+  font-weight: 700;
+  font-size: 20px;
+  margin-right: 20px;
+}
+
 /* === FOOTER === */
 .footer {
   text-align: center;
