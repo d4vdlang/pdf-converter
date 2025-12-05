@@ -1,11 +1,35 @@
 import React from "react";
 import { Link } from "react-router-dom";
+import { Helmet } from "react-helmet";
 import { FaFilePdf, FaFileWord, FaFileImage } from "react-icons/fa";
 import "../App.css";
 
 function HomePage() {
   return (
     <div className="home">
+      <Helmet>
+        <title>PDFConvert4Me — Free PDF Converter (PDF to Word, Excel, JPG)</title>
+
+        <meta
+          name="description"
+          content="Convert PDF to Word, Excel, PowerPoint, JPG, PNG and more for free. Fast, secure, no signup required using PDFConvert4Me."
+        />
+
+        <link rel="canonical" href="https://pdfconvert4me.com/" />
+
+        <meta property="og:title" content="PDFConvert4Me — Free PDF Converter" />
+        <meta
+          property="og:description"
+          content="Fast and secure PDF conversions. Convert PDF to Word, Excel, JPG and more in seconds — no account needed."
+        />
+        <meta property="og:type" content="website" />
+        <meta property="og:url" content="https://pdfconvert4me.com/" />
+        <meta
+          property="og:image"
+          content="https://pdfconvert4me.com/images/og-image.jpg"
+        />
+      </Helmet>
+
       <div className="home-hero">
         <h1>All-in-One File Converter</h1>
         <p>

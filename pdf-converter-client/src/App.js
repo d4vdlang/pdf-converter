@@ -1,4 +1,6 @@
 // src/App.js
+import BlogList from "./pages/BlogList";
+import BlogPost from "./pages/BlogPost";
 import React, { useState, useEffect } from "react";
 import { BrowserRouter as Router, Routes, Route, Link, useLocation } from "react-router-dom";
 import { motion } from "framer-motion";
@@ -560,6 +562,7 @@ function App() {
   
         <Link to="/">Home</Link>
         <Link to="/convert">Converter</Link>
+        <Link to="/blog">blog</Link>
         <Link to="/privacy">Privacy</Link>
         <Link to="/terms">Terms</Link>
         <Link to="/contact">Contact</Link>
@@ -571,6 +574,8 @@ function App() {
         <Route path="/privacy" element={<Privacy />} />
         <Route path="/terms" element={<Terms />} />
         <Route path="/contact" element={<Contact />} />
+        <Route path="/blog" element={<BlogList />} />
+        <Route path="/blog/:slug" element={<BlogPost />} />
       </Routes>
 
       <footer className="footer">
