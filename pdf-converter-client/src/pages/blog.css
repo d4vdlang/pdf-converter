@@ -137,3 +137,69 @@
   font-size: 12px;
   color: #aaa;
 }
+
+/* === MOBILE FIX FOR BLOG TABLE OF CONTENTS === */
+@media (max-width: 768px) {
+  .toc-container {
+    position: static !important;
+    margin: 20px 0 !important;
+    width: 100% !important;
+    box-shadow: none !important;
+  }
+
+  .toc-container ul {
+    padding-left: 15px !important;
+  }
+
+  .blog-content {
+    padding: 0 15px !important;
+  }
+
+  /* Optional: increase line spacing for mobile readability */
+  .blog-content p {
+    line-height: 1.7;
+    font-size: 16px;
+  }
+}
+
+/* Hide desktop TOC title on mobile */
+@media (max-width: 768px) {
+  .toc-wrapper {
+    width: 100% !important;
+    position: relative !important;
+  }
+
+  .toc-toggle {
+    display: block !important;
+  }
+
+  .toc-box {
+    position: relative !important;
+    top: 0 !important;
+    margin-bottom: 20px;
+  }
+
+  .toc-desktop-title {
+    display: none;
+  }
+}
+
+/* Fix mobile layout so the TOC does NOT appear as a sidebar */
+@media (max-width: 768px) {
+  .blog-container > div {
+    flex-direction: column !important;
+  }
+
+  aside.toc-wrapper {
+    width: 100% !important;
+    order: -1; /* puts the toggle above content */
+  }
+
+  .toc-box {
+    display: none; /* hidden until toggle opens it */
+  }
+
+  .toc-box.open {
+    display: block !important;
+  }
+}

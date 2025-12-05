@@ -1,4 +1,5 @@
 // src/App.js
+import Navbar from "./components/Navbar";
 import BlogList from "./pages/BlogList";
 import BlogPost from "./pages/BlogPost";
 import React, { useState, useEffect } from "react";
@@ -557,16 +558,7 @@ function Contact() {
 function App() {
   return (
     <Router>
-        <nav className="navbar">
-        <div className="brand">PDFConvert4Me</div>
-  
-        <Link to="/">Home</Link>
-        <Link to="/convert">Converter</Link>
-        <Link to="/blog">blog</Link>
-        <Link to="/privacy">Privacy</Link>
-        <Link to="/terms">Terms</Link>
-        <Link to="/contact">Contact</Link>
-        </nav>
+    <Navbar />
         
       <Routes>
         <Route path="/" element={<Home />} />

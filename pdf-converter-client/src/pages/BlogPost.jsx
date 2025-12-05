@@ -10,29 +10,42 @@ export default function BlogPost() {
   const { slug } = useParams();
   const [post, setPost] = useState(null);
   const [toc, setToc] = useState([]);
+  const [contentHTML, setContentHTML] = useState("");
+  const [tocOpen, setTocOpen] = useState(false);
 
   useEffect(() => {
-    // Locate the post using slug
     const p = posts.find((x) => x.slug === slug);
     setPost(p || null);
 
-    // Build TOC based on H2 tags inside post.content
-    if (p && p.content) {
-      try {
-        const tmp = document.createElement("div");
-        tmp.innerHTML = p.content;
-
-        const headings = [...tmp.querySelectorAll("h2")].map((h, i) => ({
-          id: `heading-${i}`,
-          text: h.textContent || `Section ${i + 1}`,
-        }));
-
-        setToc(headings);
-      } catch (err) {
-        setToc([]);
-      }
-    } else {
+    if (!p || !p.content) {
       setToc([]);
+      setContentHTML("");
+      return;
+    }
+
+    try {
+      // Parse HTML safely
+      const tmp = document.createElement("div");
+      tmp.innerHTML = p.content;
+
+      // Build TOC from H2
+      const headings = [...tmp.querySelectorAll("h2")].map((h, i) => ({
+        id: `heading-${i}`,
+        text: h.textContent || `Section ${i + 1}`,
+      }));
+
+      setToc(headings);
+
+      // Add IDs to h2 so links work
+      tmp.querySelectorAll("h2").forEach((h, i) => {
+        h.setAttribute("id", `heading-${i}`);
+      });
+
+      setContentHTML(tmp.innerHTML);
+    } catch (err) {
+      console.error("TOC parsing error:", err);
+      setToc([]);
+      setContentHTML(p.content);
     }
   }, [slug]);
 
@@ -47,21 +60,6 @@ export default function BlogPost() {
       </div>
     );
   }
-
-  // Add IDs to <h2> tags so TOC links work
-  const getContentWithIds = () => {
-    try {
-      const tmp = document.createElement("div");
-      tmp.innerHTML = post.content;
-
-      const h2s = tmp.querySelectorAll("h2");
-      h2s.forEach((h, i) => h.setAttribute("id", `heading-${i}`));
-
-      return tmp.innerHTML;
-    } catch (err) {
-      return post.content;
-    }
-  };
 
   // Reading time estimate
   const readingTime = (() => {
@@ -79,20 +77,48 @@ export default function BlogPost() {
         padding: "30px 16px",
       }}
     >
-  <Helmet>
-  <title>{post.title} | PDFConvert4Me</title>
-  <meta
-    name="description"
-    content={post.description || "PDFConvert4Me blog post"}
-  />
-  {post.image && <meta property="og:image" content={post.image} />}
-  <meta property="og:title" content={post.title} />
-  <meta
-    property="og:description"
-    content={post.description || ""}
-  />
-  </Helmet>
-
+      {/* SEO */}
+      <Helmet>
+        <title>{post.title} | PDFConvert4Me</title>
+        <meta
+          name="description"
+          content={post.description || "PDFConvert4Me blog post"}
+        />
+        {post.image && <meta property="og:image" content={post.image} />}
+        <meta property="og:title" content={post.title} />
+        <meta
+          property="og:description"
+          content={post.description || ""}
+        />
+  <script type="application/ld+json">
+  {`
+  {
+    "@context": "https://schema.org",
+    "@type": "BlogPosting",
+    "headline": "${post.title}",
+    "description": "${post.description || ""}",
+    "image": "${post.image || ""}",
+    "author": {
+      "@type": "Organization",
+      "name": "PDFConvert4Me"
+    },
+    "publisher": {
+      "@type": "Organization",
+      "name": "PDFConvert4Me",
+      "logo": {
+        "@type": "ImageObject",
+        "url": "https://pdfconvert4me.xyz/images/logo.png"
+      }
+    },
+    "datePublished": "${post.date}",
+    "mainEntityOfPage": {
+      "@type": "WebPage",
+      "@id": "https://pdfconvert4me.xyz/blog/${post.slug}"
+    }
+     }
+     `}
+     </script>
+      </Helmet>
 
       <main style={{ width: "100%", maxWidth: 1000 }}>
         <article className="blog-container" style={{ padding: "28px" }}>
@@ -116,62 +142,88 @@ export default function BlogPost() {
             <div style={{ flex: 1, minWidth: 0 }}>
               <div
                 className="blog-content"
-                dangerouslySetInnerHTML={{ __html: getContentWithIds() }}
+                dangerouslySetInnerHTML={{ __html: contentHTML }}
                 style={{ fontSize: 17, lineHeight: 1.75 }}
               />
             </div>
 
-            {/* TOC SIDEBAR */}
-            {toc.length > 0 && (
-              <aside
-                style={{
-                  width: 260,
-                  flexShrink: 0,
-                  display: "block",
-                }}
-              >
-                <div style={{ position: "sticky", top: 100 }}>
-                  <div
-                    style={{
-                      background: "#fff",
-                      padding: 16,
-                      borderRadius: 10,
-                      boxShadow: "0 6px 18px rgba(0,0,0,0.04)",
-                    }}
-                  >
-                    <h4 style={{ margin: "0 0 8px 0" }}>On this page</h4>
+{/* TOC SIDEBAR */}
+{toc.length > 0 && (
+  <aside
+    className="toc-wrapper"
+    style={{
+      width: 260,
+      flexShrink: 0,
+    }}
+  >
+    {/* MOBILE TOGGLE BUTTON */}
+    <button
+      className="toc-toggle"
+      onClick={() => setTocOpen(!tocOpen)}
+      style={{
+        display: "none",
+        width: "100%",
+        padding: "12px 14px",
+        background: "#16a34a",
+        color: "#fff",
+        border: "none",
+        borderRadius: 8,
+        fontSize: 16,
+        cursor: "pointer",
+        marginBottom: 12,
+      }}
+    >
+      {tocOpen ? "Hide contents ▲" : "On this page ▼"}
+    </button>
 
-                    <ul style={{ paddingLeft: 18, margin: 0 }}>
-                      {toc.map((t) => (
-                        <li key={t.id} style={{ marginBottom: 8 }}>
-                          <a
-                            href={`#${t.id}`}
-                            style={{
-                              color: "#16a34a",
-                              textDecoration: "none",
-                            }}
-                          >
-                            {t.text}
-                          </a>
-                        </li>
-                      ))}
-                    </ul>
+    {/* CONTENT BOX */}
+    <div
+    className={`toc-box ${tocOpen ? "open" : ""}`}
+    style={{
+    position: "sticky",
+    top: 100,
+    background: "#fff",
+    padding: 16,
+    borderRadius: 10,
+    boxShadow: "0 6px 18px rgba(0,0,0,0.04)",
+      }}
+    >
+      {/* desktop title */}
+      <h4 className="toc-desktop-title" style={{ margin: "0 0 8px 0" }}>
+        On this page
+      </h4>
 
-                    <div style={{ marginTop: 12, fontSize: 13, color: "#666" }}>
-                      <div>{readingTime}</div>
+      <ul style={{ paddingLeft: 18, margin: 0 }}>
+        {toc.map((t) => (
+          <li key={t.id} style={{ marginBottom: 8 }}>
+            <a
+              href={`#${t.id}`}
+              style={{
+                color: "#16a34a",
+                textDecoration: "none",
+              }}
+              onClick={() => setTocOpen(false)} // auto-collapse after tap
+            >
+              {t.text}
+            </a>
+          </li>
+        ))}
+      </ul>
 
-                      <div style={{ marginTop: 6 }}>
-                        <Link
-                          to="/blog"
-                          style={{ color: "#128f3b", textDecoration: "none" }}
-                        >
-                          ← Back to blog
-                        </Link>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              </aside>
+      <div style={{ marginTop: 12, fontSize: 13, color: "#666" }}>
+        <div>{readingTime}</div>
+
+        <div style={{ marginTop: 6 }}>
+          <Link
+            to="/blog"
+            style={{ color: "#128f3b", textDecoration: "none" }}
+          >
+            ← Back to blog
+          </Link>
+        </div>
+      </div>
+    </div>
+  </aside>
             )}
           </div>
         </article>

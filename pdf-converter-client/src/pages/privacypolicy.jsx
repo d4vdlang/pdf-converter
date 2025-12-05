@@ -1,8 +1,14 @@
+import { Helmet } from "react-helmet-async";
 import React from "react";
 import "../App.css";
 
 function PrivacyPolicy() {
   return (
+   <Helmet>
+  <title>Privacy Policy — PDFConvert4me</title>
+  <meta name="description" content="Read how PDFConvert4me processes files securely and protects your privacy." />
+   </Helmet>
+
     <div className="policy">
       <h1>Privacy Policy</h1>
       <p>

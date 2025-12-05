@@ -9,12 +9,10 @@ function HomePage() {
     <div className="home">
       <Helmet>
         <title>PDFConvert4Me — Free PDF Converter (PDF to Word, Excel, JPG)</title>
-
         <meta
           name="description"
           content="Convert PDF to Word, Excel, PowerPoint, JPG, PNG and more for free. Fast, secure, no signup required using PDFConvert4Me."
         />
-
         <link rel="canonical" href="https://pdfconvert4me.com/" />
 
         <meta property="og:title" content="PDFConvert4Me — Free PDF Converter" />
@@ -69,6 +67,32 @@ function HomePage() {
           </p>
         </div>
       </div>
+
+      {/* ✅ SEO text section MUST be inside the main div */}
+      <section style={{ padding: "40px 20px", maxWidth: "900px", margin: "0 auto" }}>
+        <h1 style={{ fontSize: "28px", fontWeight: "700", marginBottom: "15px" }}>
+          Free Online PDF Converter – Convert PDF to Word, Excel & More
+        </h1>
+
+        <p style={{ fontSize: "16px", lineHeight: "1.6", marginBottom: "12px" }}>
+          PDFConvert4Me is a fast, secure, and easy-to-use online tool that helps you
+          convert your documents in seconds. Convert PDF to Word, Word to PDF, PDF to
+          Excel, and other formats using a clean and simple interface — no sign-up
+          required.
+        </p>
+
+        <p style={{ fontSize: "16px", lineHeight: "1.6", marginBottom: "12px" }}>
+          All tools are available on one page, so you don’t waste time navigating
+          through multiple menus. Just upload your file, choose your conversion type,
+          and download your document instantly.
+        </p>
+
+        <p style={{ fontSize: "16px", lineHeight: "1.6" }}>
+          Whether you're a student, worker, business owner, or casual user, 
+          <strong>PDFConvert4Me</strong> helps you quickly convert PDFs without
+          hassle. 100% free, fast, and mobile-friendly.
+        </p>
+      </section>
     </div>
   );
 }

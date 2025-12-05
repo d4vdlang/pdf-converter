@@ -3,6 +3,11 @@ import "../App.css";
 
 function Terms() {
   return (
+  <Helmet>
+  <title>Terms of Service — PDFConvert4me</title>
+  <meta name="description" content="Terms of Service for PDFConvert4me online file converter." />
+  </Helmet>
+
     <div className="terms">
       <h1>Terms of Service</h1>
       <p>
@@ -16,7 +21,7 @@ function Terms() {
         own discretion.
       </p>
 
-      <p>
+      <p
         We reserve the right to update or modify these terms at any time without
         prior notice. Continued use of the site after changes constitutes
         acceptance of the updated terms.
